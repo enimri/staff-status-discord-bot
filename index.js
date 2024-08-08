@@ -1,4 +1,4 @@
-const { Client, GatewayIntentBits } = require('discord.js');
+const { Client, GatewayIntentBits, EmbedBuilder } = require('discord.js');
 const client = new Client({
     intents: [
         GatewayIntentBits.Guilds,
@@ -9,8 +9,8 @@ const client = new Client({
     ]
 });
 
-const staffRoleId = 'YOUR_STAFF_ROLES'; // Replace with your staff role ID
-const channelId = 'YOUR_CHANNEL_ID'; // Replace with your channel ID
+const staffRoleId = 'YOUR_STAFF_DISCORD_ROLE_ID'; // Replace with your staff role ID
+const channelId = 'YOUR_CHANNEL_DISCORD_ID'; // Replace with your channel ID
 let statusMessage; // To store the message object
 
 client.on('presenceUpdate', async (oldPresence, newPresence) => {
@@ -18,10 +18,19 @@ client.on('presenceUpdate', async (oldPresence, newPresence) => {
 
     if (!member.roles.cache.has(staffRoleId)) return;
 
+    const avatarUrl = member.user.displayAvatarURL({ dynamic: true });
+
     if (newPresence.status === 'online') {
         if (!statusMessage) {
+            const embed = new EmbedBuilder()
+                .setColor('#00ff00') // Green color
+                .setTitle('Staff Member Online')
+                .setDescription(`${member.displayName} is online :green_circle:`)
+                .setThumbnail(avatarUrl) // Set the staff member's avatar as thumbnail
+                .setTimestamp();
+
             const channel = client.channels.cache.get(channelId);
-            statusMessage = await channel.send(`${member.displayName} is online :green_circle:`);
+            statusMessage = await channel.send({ embeds: [embed] });
         }
     } else {
         if (statusMessage) {
@@ -33,10 +42,21 @@ client.on('presenceUpdate', async (oldPresence, newPresence) => {
 
 // Manual trigger for testing purposes
 client.on('messageCreate', async (message) => {
+    const member = message.member;
+
     if (message.content === '!online') {
-        const channel = client.channels.cache.get(channelId);
+        const avatarUrl = member.user.displayAvatarURL({ dynamic: true });
+
         if (!statusMessage) {
-            statusMessage = await channel.send(`Manual trigger: Staff member is online :green_circle:`);
+            const embed = new EmbedBuilder()
+                .setColor('#00ff00')
+                .setTitle('Manual Trigger: Staff Member Online')
+                .setDescription(`${member.displayName} is online :green_circle:`)
+                .setThumbnail(avatarUrl)
+                .setTimestamp();
+
+            const channel = client.channels.cache.get(channelId);
+            statusMessage = await channel.send({ embeds: [embed] });
         }
     }
 
@@ -48,4 +68,4 @@ client.on('messageCreate', async (message) => {
     }
 });
 
-client.login('yOUR_CLIENT_ID'); // Replace with your bot token
+client.login(YOUT_DISCORD_TOKEN_BOT'); // Replace with your bot token
